@@ -1,0 +1,78 @@
+{
+    "section1": {
+        "files": [
+            {
+                "url": "assets/Avatar.svg",
+                "svgConfig": {
+                    "width": 0,
+                    "height": 0,
+                    "scale": 0
+                },
+                "type": "svg",
+                "key": "Avatar"
+            },
+            {
+                "url": "assets/Avatar 2.svg",
+                "svgConfig": {
+                    "width": 0,
+                    "height": 0,
+                    "scale": 0
+                },
+                "type": "svg",
+                "key": "Avatar 2"
+            },
+            {
+                "url": "assets/dino.png",
+                "key": "dino",
+                "type": "image"
+            },
+            {
+                "url": "assets/Group 77810.svg",
+                "svgConfig": {
+                    "width": 0,
+                    "height": 0,
+                    "scale": 0
+                },
+                "type": "svg",
+                "key": "Group 77810"
+            },
+            {
+                "url": "assets/hint.svg",
+                "svgConfig": {
+                    "width": 0,
+                    "height": 0,
+                    "scale": 0
+                },
+                "type": "svg",
+                "key": "hint"
+            },
+            {
+                "url": "assets/Labels.png",
+                "type": "image",
+                "key": "Labels"
+            },
+            {
+                "url": "assets/rook.svg",
+                "svgConfig": {
+                    "width": 0,
+                    "height": 0,
+                    "scale": 0
+                },
+                "type": "svg",
+                "key": "rook"
+            },
+            {
+                "url": "assets/Squares.png",
+                "type": "image",
+                "key": "Squares"
+            }
+        ]
+    },
+    "meta": {
+        "app": "Phaser Editor 2D - Asset Pack Editor",
+        "contentType": "phasereditor2d.pack.core.AssetContentType",
+        "url": "https://phasereditor2d.com",
+        "version": 2,
+        "showAllFilesInBlocks": false
+    }
+}
