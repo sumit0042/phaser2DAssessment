@@ -14,5 +14,6 @@ Alternately, the game has been hosted on [AWS](http://3.6.37.218:8081/) in the m
 ## Further Improvements
 - More than 2 players can play if they have the link to the game. Avoid this, allow more instances of game for new joinees or provide them with spectator role
 - Handle rook movement constraints on backend
+- Handle Turns on Backend
 - Add timer
 - Add Game Over Animations
