@@ -90,18 +90,15 @@ class Level extends Phaser.Scene {
 	state;
 	socket;
 	myMove;
+	winner;
 
 	create() {
 
 		this.editorCreate();
-		//TODO: Uncomment below 5 lines
+		this.winner = false;
 		this.socket = io();
 		this.socket.on('rookMoved', (rookLoc) => {
-			// check if new rook position is the same as old position, if so, then its other player's turn
 			console.log("Received Rook moved event")
-			// if (this.state.xRook == rookLoc.xRook && this.state.yRook == rookLoc.yRook) {
-			// 	return
-			// }
 			this.state = rookLoc;
 			this.events.emit(this.onRookMoved)
 			this.myMove = false;
@@ -122,7 +119,6 @@ class Level extends Phaser.Scene {
 	}
 
 	hideHints() {
-		console.log('hiding hints')
 		for (let i = 0; i < 7; i++) {
 			this.hintListX[i].visible = false;
 		}
@@ -132,8 +128,6 @@ class Level extends Phaser.Scene {
 	}
 
 	showHints(xStep, yStep) {
-		console.log('showing hints')
-		console.log(this.hintListX)
 		this.hintListX.forEach((hint,i) => {
 			hint.visible = i<this.state.xRook;
 			hint.setY(this.reward.y + (this.state.yRook*yStep))
@@ -151,15 +145,17 @@ class Level extends Phaser.Scene {
 	}
 
 	moveRook (newX, newY) {
-		console.log('Moving Rook')
-		// this.hideHints()
 		const tween = this.tweens.add({
 			targets: this.rook,
 			x: newX, // New X position
 			y: newY, // New Y position
 			duration: 1000, // Duration in milliseconds (e.g., 2000ms = 2 seconds)
 			ease: 'Linear', // Easing function (Linear for constant speed)
-			// onComplete: this.showHints,
+			onComplete: () => {
+				if (this.winner) {
+					alert("You Win !!")
+				}
+			}
 		})
 		tween.play()
 	}
@@ -171,10 +167,12 @@ class Level extends Phaser.Scene {
 			this.hintListX[i].on(Phaser.Input.Events.POINTER_UP,
 				() => {
 				if (this.myMove) {
+					alert("Please wait for your turn")
 					return
 				}
 				this.state.xRook = this.hintListX[i].xPos;
 				this.state.yRook = this.hintListX[i].yPos;
+				this.winner = this.state.xRook == 0 && this.state.yRook == 0
 				this.socket.emit('rookMovement', this.state)
 				this.events.emit(this.onRookMoved)
 				this.myMove = true;
@@ -186,10 +184,12 @@ class Level extends Phaser.Scene {
 			this.hintListY[i].on(Phaser.Input.Events.POINTER_UP,
 				() => {
 				if (this.myMove) {
+					alert("Please wait for your turn")
 					return
 				}
 				this.state.xRook = this.hintListY[i].xPos;
 				this.state.yRook = this.hintListY[i].yPos;
+				this.winner = this.state.xRook == 0 && this.state.yRook == 0
 				this.socket.emit('rookMovement', this.state)
 				this.events.emit(this.onRookMoved)
 				this.myMove = true;

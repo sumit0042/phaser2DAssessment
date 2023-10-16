@@ -10,7 +10,6 @@ class Preload extends Phaser.Scene {
 
 		/* START-USER-CTR-CODE */
 		// Write your code here.
-		// this.players = {}
 		/* END-USER-CTR-CODE */
 	}
 
@@ -43,37 +42,16 @@ class Preload extends Phaser.Scene {
 	button_container;
 
 	/* START-USER-CODE */
-	// players;
-	// socket;
 
 	preload() {
 
 		this.editorCreate();
 		this.button_container.setVisible(false)
 		this.editorPreload();
-		// this.socket = io()
-		// console.log(this.socket)
-		// this.socket.on('currentPlayers', function (players) {
-		// 	console.log(players)
-		// 	this.players = players;
-		// 	console.log(this.players)
-		//   });
-
-		// this.socket.on('newPlayer', function(player) {
-		// 	this.players[player.playerId] = player
-		// })
-
 		this.load.on(Phaser.Loader.Events.COMPLETE, () => this.button_container.setVisible(true));
 		this.button_container.on(Phaser.Input.Events.POINTER_UP,
 		() => {
 			this.scene.start("Level")
-			// console.log(this.players)
-			// if (Object.keys(this.players).length>1) {
-			// 	this.scene.start("Level")
-			// }
-			// else {
-			// 	alert("Waiting for other player to join")
-			// }
 		}, this)
 
 	}
