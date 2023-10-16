@@ -50,19 +50,45 @@
             "scaleY": 0.7
         },
         {
+            "prefabId": "ff28a11e-0456-4b56-b597-a82b43195ec4",
+            "id": "c6a339ec-8e93-4ae7-a490-e72a3aab2b43",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "timer2",
+            "scope": "CLASS",
+            "x": 676,
+            "y": 108
+        },
+        {
+            "prefabId": "ff28a11e-0456-4b56-b597-a82b43195ec4",
+            "id": "eac1a329-9912-45b6-8940-ecbce4062a5f",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "timer",
+            "scope": "CLASS",
+            "x": 676,
+            "y": 650
+        },
+        {
             "type": "Image",
             "id": "fbe94229-d4ef-476b-ad99-f54752e21aef",
             "label": "avatar_2",
+            "scope": "CLASS",
             "texture": {
                 "key": "Avatar 2"
             },
             "x": 676,
-            "y": 108
+            "y": 109
         },
         {
             "type": "Image",
             "id": "33fd8f88-50a0-4673-bed5-01f554c04989",
             "label": "avatar",
+            "scope": "CLASS",
             "texture": {
                 "key": "Avatar"
             },
@@ -81,7 +107,7 @@
                 "key": "rook"
             },
             "x": 861,
-            "y": 208,
+            "y": 197,
             "scaleX": 1.4,
             "scaleY": 1.4
         },
@@ -96,7 +122,7 @@
             "label": "prefabHint",
             "scope": "CLASS",
             "x": 809,
-            "y": 208,
+            "y": 207,
             "visible": false
         },
         {

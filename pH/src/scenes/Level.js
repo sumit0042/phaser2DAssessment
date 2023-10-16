@@ -33,20 +33,28 @@ class Level extends Phaser.Scene {
 		reward.scaleX = 0.7;
 		reward.scaleY = 0.7;
 
+		// timer2
+		const timer2 = new PrefabTimer(this, 676, 108);
+		this.add.existing(timer2);
+
+		// timer
+		const timer = new PrefabTimer(this, 676, 650);
+		this.add.existing(timer);
+
 		// avatar_2
-		this.add.image(676, 108, "Avatar 2");
+		const avatar_2 = this.add.image(676, 109, "Avatar 2");
 
 		// avatar
-		this.add.image(676, 650, "Avatar");
+		const avatar = this.add.image(676, 650, "Avatar");
 
 		// rook
-		const rook = this.add.image(861, 208, "rook");
+		const rook = this.add.image(861, 197, "rook");
 		rook.setInteractive(new Phaser.Geom.Rectangle(0, 0, 26, 26), Phaser.Geom.Rectangle.Contains);
 		rook.scaleX = 1.4;
 		rook.scaleY = 1.4;
 
 		// prefabHint
-		const prefabHint = new PrefabHint(this, 809, 208);
+		const prefabHint = new PrefabHint(this, 809, 207);
 		this.add.existing(prefabHint);
 		prefabHint.visible = false;
 
@@ -62,6 +70,10 @@ class Level extends Phaser.Scene {
 		onRookMoved.eventEmitter = "scene.events";
 
 		this.reward = reward;
+		this.timer2 = timer2;
+		this.timer = timer;
+		this.avatar_2 = avatar_2;
+		this.avatar = avatar;
 		this.rook = rook;
 		this.prefabHint = prefabHint;
 		this.onRookMoved = onRookMoved;
@@ -73,6 +85,14 @@ class Level extends Phaser.Scene {
 
 	/** @type {Phaser.GameObjects.Image} */
 	reward;
+	/** @type {PrefabTimer} */
+	timer2;
+	/** @type {PrefabTimer} */
+	timer;
+	/** @type {Phaser.GameObjects.Image} */
+	avatar_2;
+	/** @type {Phaser.GameObjects.Image} */
+	avatar;
 	/** @type {Phaser.GameObjects.Image} */
 	rook;
 	/** @type {PrefabHint} */
@@ -91,22 +111,36 @@ class Level extends Phaser.Scene {
 	socket;
 	myMove;
 	winner;
+	timeout;
+	totalTime;
+	mask;
+	shape;
+	startTime;
 
 	create() {
 
 		this.editorCreate();
 		this.winner = false;
+		this.shape = this.make.graphics()
+		this.mask = new Phaser.Display.Masks.GeometryMask(this, this.shape)
+		this.timer.setMask(this.mask)
+		this.timer2.setMask(this.mask)
+		this.timer2.setFillStyle(0x00ff00);
+		this.timer.setFillStyle(0x00ff00);
+		this.totalTime = 10000;
 		this.socket = io();
 		this.socket.on('rookMoved', (rookLoc) => {
 			console.log("Received Rook moved event")
 			this.state = rookLoc;
 			this.events.emit(this.onRookMoved)
 			this.myMove = false;
+			this.toggleTimer(true)
 		})
 		this.initHints()
 		this.hideHints()
 		this.events.addListener(this.onRookMoved,()=>{
 			console.log(`Rook Moved to ${this.state.xRook}, ${this.state.yRook}`)
+			this.startTime = this.time.now;
 			const xMax = 861;
 			const yMax = 208;
 			const xMin = this.reward.x;
@@ -176,6 +210,7 @@ class Level extends Phaser.Scene {
 				this.socket.emit('rookMovement', this.state)
 				this.events.emit(this.onRookMoved)
 				this.myMove = true;
+				this.toggleTimer(false);
 				console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
 			}, this)
 			this.add.existing(this.hintListX[i])
@@ -193,10 +228,33 @@ class Level extends Phaser.Scene {
 				this.socket.emit('rookMovement', this.state)
 				this.events.emit(this.onRookMoved)
 				this.myMove = true;
+				this.toggleTimer(false)
 				console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
 			}, this)
 			this.add.existing(this.hintListY[i])
 		}
+	}
+
+	toggleTimer(isOpponentMove) {
+		if (isOpponentMove) {
+			this.timer.setMask(null)
+			this.timer2.setMask(this.mask)
+		}
+		else {
+			this.timer2.setMask(null)
+			this.timer.setMask(this.mask)
+		}
+	}
+
+	update() {
+    	const progress = (this.time.now - this.startTime) / this.totalTime;
+		// if not myMove and progress > 1, game over
+		this.shape.clear()
+		this.shape.beginPath()
+		this.shape.moveTo(this.myMove? this.timer.x:this.timer2.x, this.myMove? this.timer.y:this.timer2.y)
+		this.shape.arc(this.myMove? this.timer.x:this.timer2.x, this.myMove? this.timer.y:this.timer2.y, 
+			64, Phaser.Math.PI2*(1/4), Phaser.Math.PI2*(1/4) + Phaser.Math.PI2 * progress, true, 0, false);
+    	this.shape.fillPath();
 	}
 
 
