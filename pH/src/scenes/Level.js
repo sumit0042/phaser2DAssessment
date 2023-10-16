@@ -109,31 +109,35 @@ class Level extends Phaser.Scene {
 	// Write more your code here
 	state;
 	socket;
-	myMove;
-	winner;
+	isOpponentsTurn;
+	didWin;
 	timeout;
 	totalTime;
-	mask;
-	shape;
+	timerMask;
+	timerShape;
 	startTime;
 
 	create() {
 
 		this.editorCreate();
-		this.winner = false;
-		this.shape = this.make.graphics()
-		this.mask = new Phaser.Display.Masks.GeometryMask(this, this.shape)
-		this.timer.setMask(this.mask)
-		this.timer2.setMask(this.mask)
+		this.didWin = false;
+
+		//timer create
+		this.timerShape = this.make.graphics()
+		this.timerMask = new Phaser.Display.Masks.GeometryMask(this, this.timerShape)
+		this.timer.setMask(this.timerMask)
+		this.timer2.setMask(this.timerMask)
 		this.timer2.setFillStyle(0x00ff00);
 		this.timer.setFillStyle(0x00ff00);
 		this.totalTime = 10000;
+
+		//socket create
 		this.socket = io();
 		this.socket.on('rookMoved', (rookLoc) => {
 			console.log("Received Rook moved event")
 			this.state = rookLoc;
 			this.events.emit(this.onRookMoved)
-			this.myMove = false;
+			this.isOpponentsTurn = false;
 			this.toggleTimer(true)
 		})
 		this.initHints()
@@ -186,7 +190,7 @@ class Level extends Phaser.Scene {
 			duration: 1000, // Duration in milliseconds (e.g., 2000ms = 2 seconds)
 			ease: 'Linear', // Easing function (Linear for constant speed)
 			onComplete: () => {
-				if (this.winner) {
+				if (this.didWin) {
 					alert("You Win !!")
 				}
 			}
@@ -200,16 +204,16 @@ class Level extends Phaser.Scene {
 			this.hintListX[i] = new PrefabHint(this, this.rook.x, this.rook.y)
 			this.hintListX[i].on(Phaser.Input.Events.POINTER_UP,
 				() => {
-				if (this.myMove) {
+				if (this.isOpponentsTurn) {
 					alert("Please wait for your turn")
 					return
 				}
 				this.state.xRook = this.hintListX[i].xPos;
 				this.state.yRook = this.hintListX[i].yPos;
-				this.winner = this.state.xRook == 0 && this.state.yRook == 0
+				this.didWin = this.state.xRook == 0 && this.state.yRook == 0
 				this.socket.emit('rookMovement', this.state)
 				this.events.emit(this.onRookMoved)
-				this.myMove = true;
+				this.isOpponentsTurn = true;
 				this.toggleTimer(false);
 				console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
 			}, this)
@@ -218,16 +222,16 @@ class Level extends Phaser.Scene {
 			this.hintListY[i] = new PrefabHint(this, this.rook.x, this.rook.y)
 			this.hintListY[i].on(Phaser.Input.Events.POINTER_UP,
 				() => {
-				if (this.myMove) {
+				if (this.isOpponentsTurn) {
 					alert("Please wait for your turn")
 					return
 				}
 				this.state.xRook = this.hintListY[i].xPos;
 				this.state.yRook = this.hintListY[i].yPos;
-				this.winner = this.state.xRook == 0 && this.state.yRook == 0
+				this.didWin = this.state.xRook == 0 && this.state.yRook == 0
 				this.socket.emit('rookMovement', this.state)
 				this.events.emit(this.onRookMoved)
-				this.myMove = true;
+				this.isOpponentsTurn = true;
 				this.toggleTimer(false)
 				console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
 			}, this)
@@ -238,31 +242,32 @@ class Level extends Phaser.Scene {
 	toggleTimer(isOpponentMove) {
 		if (isOpponentMove) {
 			this.timer.setMask(null)
-			this.timer2.setMask(this.mask)
+			this.timer2.setMask(this.timerMask)
 		}
 		else {
 			this.timer2.setMask(null)
-			this.timer.setMask(this.mask)
+			this.timer.setMask(this.timerMask)
 		}
 	}
 
 	update() {
     	const progress = (this.time.now - this.startTime) / this.totalTime;
 		// if not myMove and progress > 1, game over
-		if (!this.timeout && !this.myMove && progress > 1) {
+		if (!this.timeout && !this.isOpponentsTurn && progress > 1) {
 			this.timeout = true
 			alert("Timed Out. You Lose !! You can still continue with the game")
 		}
-		if (!this.timeout && this.myMove && progress > 1) {
+		if (!this.timeout && this.isOpponentsTurn && progress > 1) {
 			this.timeout = true
 			alert("Timed Out. You Win !! You can still continue with the game")
 		}
-		this.shape.clear()
-		this.shape.beginPath()
-		this.shape.moveTo(this.myMove? this.timer.x:this.timer2.x, this.myMove? this.timer.y:this.timer2.y)
-		this.shape.arc(this.myMove? this.timer.x:this.timer2.x, this.myMove? this.timer.y:this.timer2.y, 
+		//update timer
+		this.timerShape.clear()
+		this.timerShape.beginPath()
+		this.timerShape.moveTo(this.isOpponentsTurn? this.timer.x:this.timer2.x, this.isOpponentsTurn? this.timer.y:this.timer2.y)
+		this.timerShape.arc(this.isOpponentsTurn? this.timer.x:this.timer2.x, this.isOpponentsTurn? this.timer.y:this.timer2.y, 
 			64, Phaser.Math.PI2*(1/4), Phaser.Math.PI2*(1/4) + Phaser.Math.PI2 * progress, true, 0, false);
-    	this.shape.fillPath();
+    	this.timerShape.fillPath();
 	}
 
 
