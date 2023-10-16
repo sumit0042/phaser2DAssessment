@@ -33,13 +33,13 @@ class Level extends Phaser.Scene {
 		reward.scaleX = 0.7;
 		reward.scaleY = 0.7;
 
-		// timer2
-		const timer2 = new PrefabTimer(this, 676, 108);
-		this.add.existing(timer2);
-
 		// timer
-		const timer = new PrefabTimer(this, 676, 650);
+		const timer = new PrefabTimer(this, 676, 108);
 		this.add.existing(timer);
+
+		// timer2
+		const timer2 = new PrefabTimer(this, 676, 650);
+		this.add.existing(timer2);
 
 		// avatar_2
 		const avatar_2 = this.add.image(676, 109, "Avatar 2");
@@ -70,8 +70,8 @@ class Level extends Phaser.Scene {
 		onRookMoved.eventEmitter = "scene.events";
 
 		this.reward = reward;
-		this.timer2 = timer2;
 		this.timer = timer;
+		this.timer2 = timer2;
 		this.avatar_2 = avatar_2;
 		this.avatar = avatar;
 		this.rook = rook;
@@ -86,9 +86,9 @@ class Level extends Phaser.Scene {
 	/** @type {Phaser.GameObjects.Image} */
 	reward;
 	/** @type {PrefabTimer} */
-	timer2;
-	/** @type {PrefabTimer} */
 	timer;
+	/** @type {PrefabTimer} */
+	timer2;
 	/** @type {Phaser.GameObjects.Image} */
 	avatar_2;
 	/** @type {Phaser.GameObjects.Image} */
@@ -249,6 +249,14 @@ class Level extends Phaser.Scene {
 	update() {
     	const progress = (this.time.now - this.startTime) / this.totalTime;
 		// if not myMove and progress > 1, game over
+		if (!this.timeout && !this.myMove && progress > 1) {
+			this.timeout = true
+			alert("Timed Out. You Lose !! You can still continue with the game")
+		}
+		if (!this.timeout && this.myMove && progress > 1) {
+			this.timeout = true
+			alert("Timed Out. You Win !! You can still continue with the game")
+		}
 		this.shape.clear()
 		this.shape.beginPath()
 		this.shape.moveTo(this.myMove? this.timer.x:this.timer2.x, this.myMove? this.timer.y:this.timer2.y)
