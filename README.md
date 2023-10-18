@@ -21,3 +21,13 @@ The logic for the main scene can be found in file [/pH/src/scenes/Level.js](http
 On refactoring, it will be split to multiple files: 
 - Timer will go in its own component
 - Socket events will be handled in a separate SocketManager class
+## Design
+Server handles following event types
+- `IO Events`: These are related to new connections and broken connections. The server maintains at max 2 connections at a time, this is because it is a 1v1 game
+- `Game Update Events`: This constitutes the `rookMoved` event from server to client and `rookMovement` event from client to server. The purpose of the event is to sync the state of the rook (its position on the 8x8 chessboard) across both the player's devices
+- `Turn Events`: This event syncronises the player's turn on both devices. Moving it to the server has security related advantages because otherwise, the game's client side build on the browser can be tweaked to manipulate turns.
+
+Client contains the following:
+- The Phaser game object. The game object is extended to a multiplayer game object. This is done to store current player and all player's profile. It handle socket's events described above and emits those events to the game scenes. The file is at [/pH/src/game.js](https://github.com/sumit0042/phaser2DAssessment/blob/master/pH/src/game.js)
+- The Preload Scene. It contains the load screen with the start button. Can be found at [/pH/src/scenes/Preload.js](https://github.com/sumit0042/phaser2DAssessment/blob/master/pH/src/scenes/Preload.js)
+- The Main Game Scene. It contains the main scene at [/pH/src/scenes/Level.js](https://github.com/sumit0042/phaser2DAssessment/blob/master/pH/src/scenes/Level.js) It processes events from the server and emits them as `onRookMoved` scene event. On this event the rook position is updated. On turn change event, turns are toggled. The `update` function handles timers and game over due to timeout.
