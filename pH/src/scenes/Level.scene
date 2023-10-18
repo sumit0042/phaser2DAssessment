@@ -13,6 +13,7 @@
             "type": "Image",
             "id": "5b17e2e9-b320-4479-a28b-573acdef6ab5",
             "label": "squares",
+            "scope": "CLASS",
             "hitArea.shape": "RECTANGLE",
             "hitArea.width": 304,
             "hitArea.height": 304,

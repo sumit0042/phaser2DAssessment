@@ -69,6 +69,7 @@ class Level extends Phaser.Scene {
 		onRookMoved.eventName = Phaser.Scenes.Events.UPDATE;
 		onRookMoved.eventEmitter = "scene.events";
 
+		this.squares = squares;
 		this.reward = reward;
 		this.timer = timer;
 		this.timer2 = timer2;
@@ -83,6 +84,8 @@ class Level extends Phaser.Scene {
 		this.events.emit("scene-awake");
 	}
 
+	/** @type {Phaser.GameObjects.Image} */
+	squares;
 	/** @type {Phaser.GameObjects.Image} */
 	reward;
 	/** @type {PrefabTimer} */
@@ -140,7 +143,7 @@ class Level extends Phaser.Scene {
 		//socket create
 		this.socket = this.game.socket;
 		this.handleServerEvents()
-		
+
 		console.log(`Sending Start Time ${this.time.now}`)
 		this.game.sendData('start', {startTime:this.time.now})
 
@@ -149,6 +152,7 @@ class Level extends Phaser.Scene {
 		this.initHints()
 		this.hideHints()
 
+		this.playBlink(this.reward)
 		this.handleRookMovedLocally()
 	}
 
@@ -226,6 +230,25 @@ class Level extends Phaser.Scene {
 			ease: 'Linear', // Easing function (Linear for constant speed)
 			onComplete: () => {
 				if (this.didWin) {
+					// this.game.sendData('over', {playerNo: this.game.myProfile})
+					this.playGameOver()
+				}
+			}
+		})
+		tween.play()
+	}
+
+	playGameOver() {
+		const tween = this.tweens.add({
+			targets:this.squares,
+			// tintTopLeft:0xff0000,
+			tintTopRight:0x00ff00,
+			tintBottomRight:0x0000ff,
+			tintFill:false,
+			duration: 400, // Duration in milliseconds (e.g., 2000ms = 2 seconds)
+			ease: 'Linear', // Easing function (Linear for constant speed)
+			onComplete: () => {
+				if (this.didWin) {
 					this.game.sendData('over', {playerNo: this.game.myProfile})
 				}
 			}
@@ -249,6 +272,7 @@ class Level extends Phaser.Scene {
 			console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
 		}, this)
 		this.add.existing(this.hintListX[i])
+		this.playBlink(this.hintListX[i])
 	}
 
 	initHintsAlongY(i) {
@@ -267,6 +291,19 @@ class Level extends Phaser.Scene {
 			console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
 		}, this)
 		this.add.existing(this.hintListY[i])
+		this.playBlink(this.hintListY[i])
+	}
+
+	playBlink(hint) {
+		const tween = this.tweens.add({
+			targets: hint,
+			scaleX: 1.6, // Scale up by 20%
+			scaleY: 1.6, // Scale up by 20%
+			duration: 1000, // 1 second duration
+			yoyo: true, // Reverses the animation (zoom-out)
+			repeat: -1, // Infinite loop
+		  });
+		tween.play()	
 	}
 
 	initHints() {
@@ -281,10 +318,14 @@ class Level extends Phaser.Scene {
 	toggleTimer(isOpponentMove) {
 		if (isOpponentMove) {
 			this.timer.setMask(null)
+			this.timer.setFillStyle(0x000000);
+			this.timer2.setFillStyle(0x00ff00);
 			this.timer2.setMask(this.timerMask)
 		}
 		else {
 			this.timer2.setMask(null)
+			this.timer2.setFillStyle(0x000000);
+			this.timer.setFillStyle(0x00ff00);
 			this.timer.setMask(this.timerMask)
 		}
 	}

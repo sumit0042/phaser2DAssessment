@@ -9,8 +9,8 @@ IO Events
 << connection disconnect newPlayer
 >> connect currentPlayers
 Game Events
-<< rookMovement
->> rookMoved
+<< rookMovement changeOfTurn over
+>> rookMoved turn gameOver
 */
 
 
@@ -34,9 +34,12 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
+
 /*==============================================================
 ==============================================================*/
 
+
+// Disconnect each Connection after 10 minutes
 function disconnectSocketAfterDelay(socket) {
   setTimeout(() => {
     socket.disconnect();
@@ -47,10 +50,14 @@ function disconnectSocketAfterDelay(socket) {
 io.on('connection', function (socket) {
   
   console.log('a user connected: ', socket.id);
+  
+  // If already 2 players, reject connection
   if (Object.keys(players).length > 1) {
     socket.disconnect()
     return
   }
+
+  // Player Number can be 1 or 2
   let plNumber = plDisconnected
   if (plNumber == 0) {
     plNumber = 1 + Object.keys(players).length
@@ -61,10 +68,15 @@ io.on('connection', function (socket) {
   };
   console.log(players)
   console.log(`There are total ${Object.keys(players).length} players`)
+
+  // Send current players data on new connection
   io.emit('currentPlayers', players);
 
+  // Disconnect after 10 minutes
   disconnectSocketAfterDelay(socket)
   
+
+  // Socket Disconnected
   socket.on('disconnect', function () {
     console.log('user disconnected: ', socket.id);
     plDisconnected = players[socket.id].playerNo
@@ -76,15 +88,16 @@ io.on('connection', function (socket) {
   });
 
 
+  //Game Start Event
   socket.on('start', (data)=>{
     console.log('Received Start Data')
     console.log(data)
-    if (data.playerNo) {
+    if (data.playerNo) { // From Preload Scene
       turnState.playerNo = data.playerNo
       console.log(`Match Started by player ${turnState.playerNo} at ${turnState.startTime}`)
       io.emit('ready')
     }
-    else {
+    else { // From Main Scene
       turnState.startTime = data.startTime
       console.log('Received Start Time')
       console.log(data.startTime)
@@ -95,6 +108,7 @@ io.on('connection', function (socket) {
   })
 
 
+  //Rook Movement Event
   socket.on('rookMovement', function (p_rookState) {
     console.log(`Received Rook Movement Event. New Rook Position ${p_rookState.xRook}, ${p_rookState.yRook}`)
     rookState.xRook = p_rookState.xRook;
@@ -102,6 +116,8 @@ io.on('connection', function (socket) {
     io.emit('rookMoved', rookState);
   });
 
+
+  //Change of turn even
   socket.on('changeOfTurn', (turnData) => {
     turnState.playerNo = turnState.playerNo == 1 ? 2:1
     turnState.startTime = turnData.startTime
@@ -109,6 +125,8 @@ io.on('connection', function (socket) {
     io.emit('turnChanged', turnState)
   })
 
+  
+  //Game Over Event
   socket.on('over', (winData) => {
     console.log(`Game Over. Player ${winData.playerNo} wins`)
     rookState = {xRook:7, yRook:7}
@@ -116,6 +134,11 @@ io.on('connection', function (socket) {
     io.emit('gameOver', winData)
   })
 });
+
+
+/*==============================================================
+==============================================================*/
+
 
 server.listen(8081, function () {
     console.log(`Listening on ${server.address().port}`);
