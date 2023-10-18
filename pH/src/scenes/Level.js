@@ -116,6 +116,7 @@ class Level extends Phaser.Scene {
 	timerMask;
 	timerShape;
 	startTime;
+	gameUpdate;
 
 
 	create() {
@@ -133,6 +134,8 @@ class Level extends Phaser.Scene {
 		this.totalTime = 10000;
 
 		// this.startTime = this.time.now
+		this.gameUpdate = false
+		this.timeout = false
 
 		//socket create
 		this.socket = this.game.socket;
@@ -158,8 +161,19 @@ class Level extends Phaser.Scene {
 		this.game.onSocketEvent.on('turnChanged', (turnData) => {
 			console.log(`Received Turn Changed Event. Turn of Player ${turnData.playerNo}`)
 			this.startTime = this.time.now;
+			this.gameUpdate = true
 			this.isOpponentsTurn = turnData.playerNo != this.game.myProfile
 			this.toggleTimer(!this.isOpponentsTurn)
+		})
+		this.game.onSocketEvent.once('gameOver', (winData) => {
+			if (this.didWin) {
+				alert("You Win")
+			}
+			else {
+				alert("You Lose")
+			}
+			this.shutdown()
+			this.scene.start('Preload')
 		})
 	}
 
@@ -212,7 +226,7 @@ class Level extends Phaser.Scene {
 			ease: 'Linear', // Easing function (Linear for constant speed)
 			onComplete: () => {
 				if (this.didWin) {
-					alert("You Win !!")
+					this.game.sendData('over', {playerNo: this.game.myProfile})
 				}
 			}
 		})
@@ -275,17 +289,25 @@ class Level extends Phaser.Scene {
 		}
 	}
 
+	handleTimeout() {
+		this.game.sendData('over', {playerNo: this.game.myProfile})
+	}
+
 	update() {
+		if (!this.gameUpdate) {
+			return
+		}
     	const progress = (this.time.now - this.startTime) / this.totalTime;
 		// console.log(`progress: ${progress}, startTime: ${this.startTime}, now: ${this.time.now}`)
 		// if not myMove and progress > 1, game over
 		if (!this.timeout && !this.isOpponentsTurn && progress > 1) {
 			this.timeout = true
-			alert("Timed Out. You Lose !! You can still continue with the game")
+			this.didWin = false
 		}
 		if (!this.timeout && this.isOpponentsTurn && progress > 1) {
 			this.timeout = true
-			alert("Timed Out. You Win !! You can still continue with the game")
+			this.didWin = true
+			this.handleTimeout()
 		}
 		//update timer
 		this.timerShape.clear()
@@ -296,6 +318,17 @@ class Level extends Phaser.Scene {
     	this.timerShape.fillPath();
 	}
 
+	cleanupScene() {
+		// Stop and remove any ongoing audio, timers, or tweens
+		this.sound.stopAll();
+		this.time.removeAllEvents();
+		this.tweens.killAll();
+	  }
+
+	shutdown() {
+		console.log("Cleaning Up")
+		this.cleanupScene()
+	}
 
 	/* END-USER-CODE */
 }

@@ -92,10 +92,6 @@ io.on('connection', function (socket) {
     rookState.xRook = p_rookState.xRook;
     rookState.yRook = p_rookState.yRook;
     io.emit('rookMoved', rookState);
-    if (p_rookState.xRook == 0 && p_rookState.yRook == 0) {
-      console.log('Game Over')
-      rookState = {xRook:7, yRook:7}
-    }
   });
 
   socket.on('changeOfTurn', (turnData) => {
@@ -103,6 +99,13 @@ io.on('connection', function (socket) {
     turnState.startTime = turnData.startTime
     console.log(`New Turn Player ${turnState.playerNo}`)
     io.emit('turnChanged', turnState)
+  })
+
+  socket.on('over', (winData) => {
+    console.log(`Game Over. Player ${winData.playerNo} wins`)
+    rookState = {xRook:7, yRook:7}
+    turnState = {playerNo:0, startTime:0}
+    io.emit('gameOver', winData)
   })
 });
 

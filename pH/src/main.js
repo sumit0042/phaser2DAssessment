@@ -47,7 +47,7 @@ class MultiplayerGame extends Phaser.Game {
 		this.socket = io();
 		this.onSocketEvent = new Phaser.Events.EventEmitter()
 
-		const eventTypes = ['connect', 'disconnect', 'currentPlayers', 'newPlayer', 'ready', 'rookMoved', 'turnChanged', 'changeOfTurn'];
+		const eventTypes = ['connect', 'disconnect', 'currentPlayers', 'newPlayer', 'ready', 'rookMoved', 'turnChanged', 'changeOfTurn', 'over', 'gameOver'];
 
 		eventTypes.forEach((eventType) => {
 		this.socket.on(eventType, (data) => {
