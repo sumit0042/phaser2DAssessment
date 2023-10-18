@@ -37,6 +37,13 @@ app.get('/', function (req, res) {
 /*==============================================================
 ==============================================================*/
 
+function disconnectSocketAfterDelay(socket) {
+  setTimeout(() => {
+    socket.disconnect();
+    console.log('Socket disconnected after 1 minute.');
+  }, 600000); // 600,000 milliseconds = 10 minute
+}
+
 io.on('connection', function (socket) {
   
   console.log('a user connected: ', socket.id);
@@ -56,6 +63,7 @@ io.on('connection', function (socket) {
   console.log(`There are total ${Object.keys(players).length} players`)
   io.emit('currentPlayers', players);
 
+  disconnectSocketAfterDelay(socket)
   
   socket.on('disconnect', function () {
     console.log('user disconnected: ', socket.id);
