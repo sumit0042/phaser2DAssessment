@@ -12,8 +12,7 @@ Alternately, the game has been hosted on [AWS](http://3.6.37.218:8081/) in the m
 - Take alternate turns to move the rook
 - Use mouse to move the rook to the new position
 ## Further Improvements
-- Implement Player Profile using session id. Currently, no more than 2 players can play if they have the link to the game. Avoid this, allow more instances of game for new joinees or provide them with spectator role. In the meantime, disconnect socket after 10 min of testing. And if new connection, then new game from rook at 7, 7
-- Add Game Over Condition and restart for gameover due to timeout
+- Currently, no more than 2 players can play if they have the link to the game. Avoid this, allow more instances of game for new joinees or provide them with spectator role. In the meantime, disconnect socket after 10 min of testing so that others can test. And if new connection, then new game from rook at 7, 7
 - Add Game Over Animations, Blinking Animation for hint and reward, Hover Animation etc
 - Add Design Documentation and Code Comments for latest commmit
 ## Logic
