@@ -49,9 +49,17 @@ class Preload extends Phaser.Scene {
 		this.button_container.setVisible(false)
 		this.editorPreload();
 		this.load.on(Phaser.Loader.Events.COMPLETE, () => this.button_container.setVisible(true));
+		
+		this.game.onSocketEvent.once('ready', () => {
+			this.scene.start("Level")
+		})
 		this.button_container.on(Phaser.Input.Events.POINTER_UP,
 		() => {
-			this.scene.start("Level")
+			if (Object.keys(this.game.players).length < 2) {
+				alert("Waiting for other player to join")
+				return
+			}
+			this.game.sendData('start',{playerNo:this.game.myProfile})
 		}, this)
 
 	}

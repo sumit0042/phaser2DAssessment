@@ -117,6 +117,7 @@ class Level extends Phaser.Scene {
 	timerShape;
 	startTime;
 
+
 	create() {
 
 		this.editorCreate();
@@ -131,20 +132,40 @@ class Level extends Phaser.Scene {
 		this.timer.setFillStyle(0x00ff00);
 		this.totalTime = 10000;
 
+		// this.startTime = this.time.now
+
 		//socket create
-		this.socket = io();
-		this.socket.on('rookMoved', (rookLoc) => {
+		this.socket = this.game.socket;
+		this.handleServerEvents()
+		
+		console.log(`Sending Start Time ${this.time.now}`)
+		this.game.sendData('start', {startTime:this.time.now})
+
+		console.log(`From Player No ${this.game.myProfile}`)
+
+		this.initHints()
+		this.hideHints()
+
+		this.handleRookMovedLocally()
+	}
+
+	handleServerEvents() {
+		this.game.onSocketEvent.on('rookMoved', (rookLoc) => {
 			console.log("Received Rook moved event")
 			this.state = rookLoc;
 			this.events.emit(this.onRookMoved)
-			this.isOpponentsTurn = false;
-			this.toggleTimer(true)
 		})
-		this.initHints()
-		this.hideHints()
+		this.game.onSocketEvent.on('turnChanged', (turnData) => {
+			console.log(`Received Turn Changed Event. Turn of Player ${turnData.playerNo}`)
+			this.startTime = this.time.now;
+			this.isOpponentsTurn = turnData.playerNo != this.game.myProfile
+			this.toggleTimer(!this.isOpponentsTurn)
+		})
+	}
+
+	handleRookMovedLocally() {
 		this.events.addListener(this.onRookMoved,()=>{
 			console.log(`Rook Moved to ${this.state.xRook}, ${this.state.yRook}`)
-			this.startTime = this.time.now;
 			const xMax = 861;
 			const yMax = 208;
 			const xMin = this.reward.x;
@@ -198,44 +219,48 @@ class Level extends Phaser.Scene {
 		tween.play()
 	}
 
+	initHintsAlongX(i) {
+		this.hintListX[i] = new PrefabHint(this, this.rook.x, this.rook.y)
+		this.hintListX[i].on(Phaser.Input.Events.POINTER_UP,
+			() => {
+			if (this.isOpponentsTurn) {
+				alert("Please wait for your turn")
+				return
+			}
+			this.state.xRook = this.hintListX[i].xPos;
+			this.state.yRook = this.hintListX[i].yPos;
+			this.didWin = this.state.xRook == 0 && this.state.yRook == 0
+			this.game.sendData('rookMovement', this.state)
+			this.game.sendData('changeOfTurn', {startTime:this.time.now})
+			console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
+		}, this)
+		this.add.existing(this.hintListX[i])
+	}
+
+	initHintsAlongY(i) {
+		this.hintListY[i] = new PrefabHint(this, this.rook.x, this.rook.y)
+		this.hintListY[i].on(Phaser.Input.Events.POINTER_UP,
+			() => {
+			if (this.isOpponentsTurn) {
+				alert("Please wait for your turn")
+				return
+			}
+			this.state.xRook = this.hintListY[i].xPos;
+			this.state.yRook = this.hintListY[i].yPos;
+			this.didWin = this.state.xRook == 0 && this.state.yRook == 0
+			this.game.sendData('rookMovement', this.state)
+			this.game.sendData('changeOfTurn', {startTime:this.time.now})
+			console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
+		}, this)
+		this.add.existing(this.hintListY[i])
+	}
+
 	initHints() {
 		for (let i = 0; i < 7; i++) {
 			//along x
-			this.hintListX[i] = new PrefabHint(this, this.rook.x, this.rook.y)
-			this.hintListX[i].on(Phaser.Input.Events.POINTER_UP,
-				() => {
-				if (this.isOpponentsTurn) {
-					alert("Please wait for your turn")
-					return
-				}
-				this.state.xRook = this.hintListX[i].xPos;
-				this.state.yRook = this.hintListX[i].yPos;
-				this.didWin = this.state.xRook == 0 && this.state.yRook == 0
-				this.socket.emit('rookMovement', this.state)
-				this.events.emit(this.onRookMoved)
-				this.isOpponentsTurn = true;
-				this.toggleTimer(false);
-				console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
-			}, this)
-			this.add.existing(this.hintListX[i])
+			this.initHintsAlongX(i)
 			//along y
-			this.hintListY[i] = new PrefabHint(this, this.rook.x, this.rook.y)
-			this.hintListY[i].on(Phaser.Input.Events.POINTER_UP,
-				() => {
-				if (this.isOpponentsTurn) {
-					alert("Please wait for your turn")
-					return
-				}
-				this.state.xRook = this.hintListY[i].xPos;
-				this.state.yRook = this.hintListY[i].yPos;
-				this.didWin = this.state.xRook == 0 && this.state.yRook == 0
-				this.socket.emit('rookMovement', this.state)
-				this.events.emit(this.onRookMoved)
-				this.isOpponentsTurn = true;
-				this.toggleTimer(false)
-				console.log(`Emiting new rook position ${this.state.xRook}, ${this.state.yRook}`)
-			}, this)
-			this.add.existing(this.hintListY[i])
+			this.initHintsAlongY(i)
 		}
 	}
 
@@ -252,6 +277,7 @@ class Level extends Phaser.Scene {
 
 	update() {
     	const progress = (this.time.now - this.startTime) / this.totalTime;
+		// console.log(`progress: ${progress}, startTime: ${this.startTime}, now: ${this.time.now}`)
 		// if not myMove and progress > 1, game over
 		if (!this.timeout && !this.isOpponentsTurn && progress > 1) {
 			this.timeout = true

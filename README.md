@@ -12,9 +12,10 @@ Alternately, the game has been hosted on [AWS](http://3.6.37.218:8081/) in the m
 - Take alternate turns to move the rook
 - Use mouse to move the rook to the new position
 ## Further Improvements
-- Implement Player Profile using session id. Currently, more than 2 players can play if they have the link to the game. Avoid this, allow more instances of game for new joinees or provide them with spectator role
-- Move Game Logic to Backend. This includes rook movement constraints, timer and turns, win condition
+- Implement Player Profile using session id. Currently, no more than 2 players can play if they have the link to the game. Avoid this, allow more instances of game for new joinees or provide them with spectator role. In the meantime, disconnect socket after 10 min of testing. And if new connection, then new game from rook at 7, 7
+- Add Game Over Condition and restart for gameover due to timeout
 - Add Game Over Animations, Blinking Animation for hint and reward, Hover Animation etc
+- Add Design Documentation and Code Comments for latest commmit
 ## Logic
 The logic for the main scene can be found in file [/pH/src/scenes/Level.js](https://github.com/sumit0042/phaser2DAssessment/blob/master/pH/src/scenes/Level.js)
 
